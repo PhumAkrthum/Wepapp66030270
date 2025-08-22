@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงานสรุปสภาพอากาศแบบอินเทอร์แอคทีฟ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome CDN for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- External CSS File -->
+    <link rel="stylesheet" href="static/css/style.css">
+
+    <!-- Placeholder Comments as per requirements -->
+    <!-- Chosen Palette: Cool Blues & Slate Gray -->
+    <!-- Application Structure Plan: A responsive dashboard layout using cards for modular content. The primary user flow is: 1. View default city's weather. 2. Use the search bar to find a new city. 3. All cards (Current, History, Trend) dynamically update. This structure was chosen for its clarity and intuitive, task-oriented design, making key data points immediately accessible and explorable. -->
+    <!-- Visualization & Content Choices: Current Weather -> Goal: Inform -> Presentation: Icon-driven stat cards -> Interaction: Updates on search -> Justification: Quick visual scanning. | Recent Updates -> Goal: Show recent changes -> Presentation: HTML Table -> Interaction: Updates on search -> Justification: Clear, structured data presentation. | Temperature Trend -> Goal: Show trends -> Presentation: Line Chart (Chart.js) -> Interaction: Hover tooltips, updates on search -> Justification: Best visualization for time-series data. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <!-- Header and Search Section -->
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-slate-900 mb-2">แดชบอร์ดสภาพอากาศ</h1>
+            <p class="text-slate-600">ป้อนชื่อเมืองเพื่อดูข้อมูลสภาพอากาศแบบเรียลไทม์และแนวโน้มในอดีต</p>
+            <div class="mt-6 flex flex-col sm:flex-row gap-2">
+                <input type="text" id="city-input" placeholder="เช่น Bangkok, Tokyo, London..." class="w-full sm:w-1/2 flex-grow p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                <button id="search-button" class="bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 shadow-md">
+                    <i class="fas fa-search mr-2"></i>ค้นหา
+                </button>
+            </div>
+            <!-- Message box for user feedback -->
+            <div id="message-box" class="mt-4 p-4 rounded-lg text-white font-semibold hidden"></div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Current Weather & Recent History -->
+            <div class="lg:col-span-2 flex flex-col gap-8">
+                
+                <!-- Current Weather Card -->
+                <section class="card border border-slate-200 p-6 shadow-lg">
+                    <h2 class="text-2xl font-bold mb-1">สภาพอากาศปัจจุบัน</h2>
+                    <p id="location-name" class="text-slate-600 mb-4 text-lg">กำลังโหลดข้อมูล...</p>
+                    <div id="current-weather-content" class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
+                        <!-- Data will be populated by JS -->
+                    </div>
+                    <p id="last-updated" class="text-xs text-slate-500 mt-4 text-right"></p>
+                </section>
+
+                <!-- Recent Updates Card -->
+                <section class="card border border-slate-200 p-6 shadow-lg">
+                    <h2 class="text-2xl font-bold mb-4">ประวัติ 5 รายการล่าสุด</h2>
+                    <p class="text-slate-600 mb-4">ส่วนนี้แสดงข้อมูลสภาพอากาศ 5 รายการล่าสุดที่บันทึกไว้สำหรับเมืองที่เลือก เพื่อให้เห็นภาพรวมการเปลี่ยนแปลงในระยะสั้น</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b-2 border-slate-300">
+                                    <th class="p-3 font-semibold">เวลา</th>
+                                    <th class="p-3 font-semibold">อุณหภูมิ</th>
+                                    <th class="p-3 font-semibold">ลักษณะอากาศ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-updates-body">
+                                <!-- Data will be populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Temperature Trend Chart -->
+            <div class="lg:col-span-1">
+                <section class="card border border-slate-200 p-6 shadow-lg h-full flex flex-col">
+                    <h2 class="text-2xl font-bold mb-4">แนวโน้มอุณหภูมิ</h2>
+                    <p class="text-slate-600 mb-4 flex-shrink-0">กราฟนี้แสดงการเปลี่ยนแปลงของอุณหภูมิในช่วง 1 ชั่วโมงต่อจากนี้ ช่วยให้คุณเห็นแนวโน้มได้อย่างชัดเจน</p>
+                    <div class="chart-container flex-grow">
+                        <canvas id="temperatureChart"></canvas>
+                    </div>
+                </section>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // --- API & DOM ELEMENTS ---
+        const API_KEY = "5e4d0f7ec9bf4b54a8711453252208";
+        // Base URL for Weather API
+        const API_URL = "https://api.weatherapi.com/v1/forecast.json";
+        // Note: The history API endpoint of Weather API requires a paid plan.
+        const locationNameEl = document.getElementById('location-name');
+        const currentWeatherContentEl = document.getElementById('current-weather-content');
+        const lastUpdatedEl = document.getElementById('last-updated');
+        const recentUpdatesBodyEl = document.getElementById('recent-updates-body');
+        const cityInputEl = document.getElementById('city-input');
+        const searchButtonEl = document.getElementById('search-button');
+        const tempChartCtx = document.getElementById('temperatureChart').getContext('2d');
+        const messageBoxEl = document.getElementById('message-box');
+        let temperatureChart;
+
+        // --- HELPER FUNCTIONS ---
+
+        // Function to show a message to the user
+        function showMessage(text, type = 'info') {
+            messageBoxEl.textContent = text;
+            messageBoxEl.className = 'mt-4 p-4 rounded-lg text-white font-semibold block';
+            if (type === 'error') {
+                messageBoxEl.classList.add('bg-red-500');
+            } else {
+                messageBoxEl.classList.add('bg-blue-500');
+            }
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderCurrentWeather(data) {
+            locationNameEl.textContent = `${data.location.name}, ${data.location.country}`;
+            
+            const weatherItems = [
+                { icon: 'fas fa-thermometer-half', label: 'อุณหภูมิ', value: `${data.current.temp_c}°C` },
+                { icon: 'fas fa-water', label: 'ความชื้น', value: `${data.current.humidity}%` },
+                { icon: 'fas fa-wind', label: 'ความเร็วลม', value: `${(data.current.wind_kph).toFixed(1)} km/h` },
+                { icon: 'fas fa-tachometer-alt', label: 'ความกดอากาศ', value: `${data.current.pressure_mb} hPa` },
+                { icon: 'fas fa-cloud', label: 'ลักษณะอากาศ', value: data.current.condition.text }
+            ];
+
+            currentWeatherContentEl.innerHTML = weatherItems.map(item => `
+                <div class="flex flex-col items-center justify-center p-4 bg-slate-100 rounded-lg">
+                    <i class="${item.icon} text-3xl text-blue-500 mb-2"></i>
+                    <span class="font-semibold text-slate-700">${item.label}</span>
+                    <span class="text-xl font-bold text-slate-900">${item.value}</span>
+                </div>
+            `).join('');
+            
+            // This now uses the localtime from the API, which is the local time of the queried city
+            lastUpdatedEl.textContent = `อัปเดตล่าสุด: ${data.location.localtime}`;
+        }
+
+        function renderRecentUpdates(data) {
+            recentUpdatesBodyEl.innerHTML = data.map(item => {
+                // Get the time part from the localtime string provided by the API
+                const timeStr = item.time.split(' ')[1];
+                return `
+                    <tr class="border-b border-slate-200 hover:bg-slate-50">
+                        <td class="p-3">${timeStr}</td>
+                        <td class="p-3">${item.temp_c}°C</td>
+                        <td class="p-3">${item.condition.text}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderChart(data) {
+            if (temperatureChart) {
+                temperatureChart.destroy();
+            }
+            // Use the localtime string directly for the labels to avoid timezone conversion issues
+            const labels = data.map(d => d.time.split(' ')[1]);
+            const temperatures = data.map(d => d.temp_c);
+
+            temperatureChart = new Chart(tempChartCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'อุณหภูมิ (°C)',
+                        data: temperatures,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#3b82f6',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: false, grid: { color: 'rgba(203, 213, 225, 0.5)' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // --- FETCH DATA FUNCTIONS ---
+        async function fetchWeatherData(city) {
+            showMessage("กำลังดึงข้อมูลสภาพอากาศ...", "info");
+            try {
+                // Fetch current weather and forecast data (1 day)
+                const response = await fetch(`${API_URL}?key=${API_KEY}&q=${city}&lang=th&days=1`);
+                if (!response.ok) {
+                    if (response.status === 400) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error.message);
+                    } else {
+                        throw new Error("เกิดข้อผิดพลาดในการดึงข้อมูล");
+                    }
+                }
+                const weatherData = await response.json();
+
+                renderCurrentWeather(weatherData);
+
+                // Use the hourly forecast data to populate the chart and recent updates
+                const hourlyData = weatherData.forecast.forecastday[0].hour;
+                
+                // Get the current hour from the API's localtime, to ensure timezone consistency
+                const currentHour = new Date(weatherData.location.localtime).getHours();
+
+                // Find the index of the current hour in the hourly data array
+                const currentIndex = hourlyData.findIndex(item => {
+                    const itemDate = new Date(item.time);
+                    return itemDate.getHours() === currentHour;
+                });
+                
+                // Get the last 7 hours of data for the chart (including the current hour)
+                const chartData = hourlyData.slice(currentIndex, currentIndex + 7);
+                
+                // Get the last 5 hours of data for the recent updates table
+                const recentData = hourlyData.slice(Math.max(0, currentIndex - 4), currentIndex + 1);
+
+                renderChart(chartData);
+                renderRecentUpdates(recentData);
+
+                showMessage("ข้อมูลอัปเดตเรียบร้อยแล้ว", "info");
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                showMessage(error.message, "error");
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        searchButtonEl.addEventListener('click', () => {
+            const city = cityInputEl.value.trim();
+            if (city) {
+                fetchWeatherData(city);
+            }
+        });
+
+        cityInputEl.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                searchButtonEl.click();
+            }
+        });
+
+        // --- INITIAL LOAD ---
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchWeatherData("Bangkok");
+        });
+    </script>
+</body>
+</html>

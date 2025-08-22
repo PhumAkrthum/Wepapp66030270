@@ -1,0 +1,61 @@
+/* ===== Global Layout & Background ===== */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    /* 🌿 พื้นหลัง Gradient + ภาพธรรมชาติ */
+    background: 
+        linear-gradient(rgba(34, 193, 195, 0.35), rgba(253, 187, 45, 0.35)),
+        url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80")
+        no-repeat center center fixed;
+    background-size: cover;
+
+    color: #111;
+}
+
+/* ===== Card Customization (เสริม Tailwind) ===== */
+.card {
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.8); /* โปร่งใสนิด ๆ ให้ตัดกับพื้นหลัง */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+/* ===== Chart Container ===== */
+.chart-container {
+    position: relative;
+    height: 350px;   /* กำหนดความสูงตายตัวให้ไม่ทะลุ */
+    width: 100%;
+}
+
+/* ===== Table Styling ===== */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95rem;
+}
+
+thead {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+th, td {
+    padding: 10px 14px;
+}
+
+tbody tr:hover {
+    background: rgba(0, 0, 0, 0.05);
+    transition: background 0.2s ease-in-out;
+}

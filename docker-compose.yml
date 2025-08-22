@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:4.4
+    container_name: weather_app_v4-mongodb-1
+    ports:
+      - "27017:27017"
+
+  weather_sensor:
+    build: ./weather_sensor
+    container_name: weather_app_v4-weather_sensor-1
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+
+  web_app:
+    build: ./web_app
+    container_name: weather_app_v4-web_app-1
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
